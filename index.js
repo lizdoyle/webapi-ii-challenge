@@ -59,6 +59,77 @@ server.get('/api/posts', (req, res) => {
         })
 })
 
+server.get('/api/posts/:id', (req, res) => {
+    const id = req.params.id;
+
+    if(!id) {
+        return res.status(404).json({ message: "The post with the specified ID does not exist." })
+    }
+    else{
+        db.find(id)
+            .then(posts => {
+                return res.status(200).json(posts)
+            })
+            .catch(err => {
+                return res.status(500).json({ error: "The post information could not be retrieved." })
+            })
+    }
+})
+
+server.get('/api/posts/:id/comments', (req, res) => {
+    const id = req.params.id;
+
+    if(!id) {
+        return res.status(404).json({ message: "The post with the specified ID does not exist." })
+    }
+    else {
+        db.find(id)
+            .then(comments => {
+                return res.status(200).json(comments)
+            })
+            .catch(err => {
+                return res.status(500).json({ error: "The comments information could not be retrieved." })
+            })
+    }
+
+})
+
+server.delete('/api/posts/:id', (req, res) => {
+    const id = req.params.id;
+
+    if(!id){
+        return res.status(404).json({ message: "The post with the specified ID does not exist." })
+    }
+    else{
+        db.remove(id)
+            .then(count => {
+                return res.status(200).json({message: `Post with id # of ${id} was deleted`})
+    })
+            .catch( err => {
+                return res.status(500).json({ error: "The post could not be removed" })
+            })
+}})
+
+server.put('/api/posts/:id', (req, res) => {
+    const id = req.params.id;
+    const update = req.body;
+
+    if(!id) {
+        return res.status(404).json({ message: "The post with the specified ID does not exist." })
+    }
+    else if(!update.title || !update.contents) {
+        return res.status(400).json({ errorMessage: "Please provide title and contents for the post." })
+    }
+    else {
+        db.update(id, update)
+            .then(post => {
+                res.status(200).json(post)
+            }) 
+            .catch(err => {
+                return res.status(500).json({ error: "The post information could not be modified." })
+            })
+    }
+})
 
 // watch for connections on port 5000
 server.listen(5000, () =>
