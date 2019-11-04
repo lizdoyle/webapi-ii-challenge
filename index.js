@@ -1,0 +1,137 @@
+const express = require('express'); // import the express package
+const db = require('./data/db');
+
+const server = express(); // creates the server
+
+// handle requests to the root of the api, the / route
+server.get('/', (req, res) => {
+  res.send('Server is working');
+});
+
+
+server.post('/api/posts', (req, res) => {
+    const postInfo = req.body;
+
+    if (!postInfo.title || !postInfo.contents) {
+        return res.status(400).json({ errorMessage: "Please provide title and contents for the post." })
+    }
+    else {
+        db.insert(postInfo)
+            .then(post => {
+                res.status(201).json(post);
+            })
+            .catch(err => {
+                res.status(500).json({ error: "There was an error while saving the post to the database" })
+            })
+    }
+
+})
+
+server.post('api/posts/:id/comments', (req, res) => {
+    const postInfo = req.body;
+    const id = req.params.id;
+
+    if(!id) {
+        res.status(404).json({ message: "The post with the specified ID does not exist." })
+    }
+    else if (!postInfo.text) {
+        return res.status(400).json({ errorMessage: "Please provide text for the comment." })
+    }
+    else {
+        db.insertComment(postInfo)
+            .then(post => {
+                res.status(201).json(post)
+            })
+            .catch(err => {
+                res.status(500).json({ error: "There was an error while saving the comment to the database" })
+            })
+    }
+
+})
+
+server.get('/api/posts', (req, res) => {
+    db.find()
+        .then(posts => {
+            res.status(200).json(posts)
+        })
+        .catch(err => {
+            return res.status(500).json({ error: "The posts information could not be retrieved." })
+        })
+})
+
+server.get('/api/posts/:id', (req, res) => {
+    const id = req.params.id;
+
+    if(!id) {
+        return res.status(404).json({ message: "The post with the specified ID does not exist." })
+    }
+    else{
+        db.findById(id)
+            .then(posts => {
+                return res.status(200).json(posts)
+            })
+            .catch(err => {
+                return res.status(500).json({ error: "The post information could not be retrieved." })
+            })
+    }
+})
+
+server.get('/api/posts/:id/comments', (req, res) => {
+    const id = req.params.id;
+
+    if(!id) {
+        return res.status(404).json({ message: "The post with the specified ID does not exist." })
+    }
+    else {
+        db.findCommentById(id)
+            .then(comments => {
+                return res.status(200).json(comments)
+            })
+            .catch(err => {
+                return res.status(500).json({ error: "The comments information could not be retrieved." })
+            })
+    }
+
+})
+
+server.delete('/api/posts/:id', (req, res) => {
+    const id = req.params.id;
+
+    if(!id){
+        return res.status(404).json({ message: "The post with the specified ID does not exist." })
+    }
+    else{
+        db.remove(id)
+            .then(count => {
+                return res.status(200).json({message: `Post with id # of ${id} was deleted`})
+    })
+            .catch( err => {
+                return res.status(500).json({ error: "The post could not be removed" })
+            })
+}})
+
+server.put('/api/posts/:id', (req, res) => {
+    const id = req.params.id;
+    const update = req.body;
+
+    if(!id) {
+        return res.status(404).json({ message: "The post with the specified ID does not exist." })
+    }
+    else if(!update.title || !update.contents) {
+        return res.status(400).json({ errorMessage: "Please provide title and contents for the post." })
+    }
+    else {
+        db.update(id, update)
+            .then(post => {
+                res.status(200).json(post)
+            }) 
+            .catch(err => {
+                return res.status(500).json({ error: "The post information could not be modified." })
+            })
+    }
+})
+
+// watch for connections on port 5000
+server.listen(5000, () =>
+  console.log('\n===Server running on http://localhost:5000===\n')
+);
