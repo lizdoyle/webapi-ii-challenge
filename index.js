@@ -38,7 +38,7 @@ server.post('api/posts/:id/comments', (req, res) => {
         return res.status(400).json({ errorMessage: "Please provide text for the comment." })
     }
     else {
-        db.insert(postInfo)
+        db.insertComment(postInfo)
             .then(post => {
                 res.status(201).json(post)
             })
@@ -66,7 +66,7 @@ server.get('/api/posts/:id', (req, res) => {
         return res.status(404).json({ message: "The post with the specified ID does not exist." })
     }
     else{
-        db.find(id)
+        db.findById(id)
             .then(posts => {
                 return res.status(200).json(posts)
             })
@@ -83,7 +83,7 @@ server.get('/api/posts/:id/comments', (req, res) => {
         return res.status(404).json({ message: "The post with the specified ID does not exist." })
     }
     else {
-        db.find(id)
+        db.findCommentById(id)
             .then(comments => {
                 return res.status(200).json(comments)
             })
